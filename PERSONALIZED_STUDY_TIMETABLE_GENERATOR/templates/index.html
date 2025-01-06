@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personalized Study Timetable Generator</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background-color: #f4f7fc; 
+            color: #333; 
+        }
+        h1 { 
+            text-align: center; 
+            color: #5c6bc0; 
+            margin-bottom: 30px;
+        }
+        form { 
+            max-width: 700px; 
+            margin: auto; 
+            background-color: #ffffff; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        label { 
+            display: block; 
+            margin-bottom: 10px; 
+            font-size: 16px; 
+            color: #4a4a4a;
+        }
+        input, select, button { 
+            width: 100%; 
+            padding: 12px; 
+            margin-bottom: 15px; 
+            border-radius: 6px; 
+            border: 1px solid #ccc; 
+            font-size: 16px; 
+        }
+        input[type="number"] { 
+            width: calc(100% - 24px); 
+        }
+        input[type="text"] {
+            width:max-content;
+        }
+        button { 
+            background-color: #5c6bc0; 
+            color: #fff; 
+            border: none; 
+            cursor: pointer;
+            font-size: 18px;
+        }
+        button:hover {
+            background-color: #3f51b5;
+        }
+        h2 { 
+            text-align: center; 
+            color: #5c6bc0; 
+            margin-top: 40px; 
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 30px; 
+        }
+        table, th, td { 
+            border: 1px solid #ccc; 
+        }
+        th, td { 
+            padding: 12px; 
+            text-align: center; 
+            font-size: 16px; 
+        }
+        th { 
+            background-color: #5c6bc0; 
+            color: white; 
+        }
+        td { 
+            background-color: #fafafa; 
+        }
+        img { 
+            display: block; 
+            margin: auto; 
+            max-width: 100%; 
+            margin-top: 30px;
+        }
+        @media (max-width: 768px) {
+            form { 
+                padding: 15px; 
+                width: 90%;
+            }
+            table, th, td { 
+                font-size: 14px; 
+            }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Study Timetable Generator</h1>
+
+<form method="POST">
+    <div style="text-align: center;">
+        <label for="subjects">Subjects (comma-separated):</label>
+        <input type="text" id="subjects" name="subjects" required>
+    </div>
+    <div id="priority-inputs" style="display: flex; padding: 5px;"></div>
+
+    <h2>Study Hours for Each Day of the Week</h2>
+
+    <div id="hours-inputs"></div>
+
+    <button type="submit">Generate Timetable</button>
+</form>
+
+{% if timetable %}
+    <h2>Generated Study Timetable</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Day</th>
+                {% for subject in timetable['Monday'] %}
+                    <th>{{ subject }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for day, subjects in timetable.items() %}
+                <tr>
+                    <td>{{ day }}</td>
+                    {% for subject, hours in subjects.items() %}
+                        <td>{{ hours }} hours</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Study Timetable Visualization</h2>
+    <img src="data:image/png;base64,{{ img_base64 }}" alt="Timetable Bar Plot">
+{% endif %}
+
+<script>
+    // Dynamically create the input fields for hours and priorities based on the number of subjects
+    document.getElementById('subjects').addEventListener('input', function () {
+        const subjects = this.value.split(',').map(subj => subj.trim());
+        const priorityInput = document.getElementById('priority-inputs');
+        const hoursInput = document.getElementById('hours-inputs');
+
+        // Clear any existing input fields
+        priorityInput.innerHTML = '';
+        hoursInput.innerHTML = '';
+
+        // Create the input fields for priorities for each subject
+        subjects.forEach((subject, index) => {
+            priorityInput.innerHTML += `<label for="priority_${index + 1}" style="padding: 5px;">Priority for ${subject}:</label>
+                                            <select id="priority_${index + 1}" name="priority_${index + 1}" style="padding: 5px;" required>
+                                                <option value="1">1</option>
+                                                <option value="2">2</option>
+                                                <option value="3">3</option>
+                                                <option value="4">4</option>
+                                                <option value="5">5</option>
+                                            </select>`;
+        });
+
+        // Create the input fields for available study hours for each day of the week (7 days)
+        const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        daysOfWeek.forEach((day, index) => {
+            hoursInput.innerHTML += `<label for="hours_day_${day}">Available Study Hours for ${day}:</label>
+                                    <input type="number" id="hours_day_${day}" name="hours_day_${day}" required>`;
+        });
+    });
+</script>
+
+</body>
+</html>
